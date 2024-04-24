@@ -65,7 +65,20 @@ async function getCustomerById(id) {
     }
 }
 
-
+async function updateCustomer(updatedCustomer) {
+    try {
+        const filter = { "id": updatedCustomer.id };
+        const setData = { $set: updatedCustomer };
+        const updateResult = 
+        await collection.updateOne(filter, setData);
+        // return array [message, errMessage]
+        return ["one record updated", null];
+    } catch (err) {
+        console.log(err.message);
+        return [ null, err.message];
+    }
+}
 
 dbStartup();
-module.exports = { getCustomers, resetCustomers, addCustomer, getCustomerById };
+module.exports = { getCustomers, resetCustomers, addCustomer,
+     getCustomerById, updateCustomer };
