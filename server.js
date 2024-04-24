@@ -1,7 +1,4 @@
 // server.js file
-
-import express from 'express';
-
 console.log('This is NodeJS, Express and MongoDB app');
 
 const express = require('express');
