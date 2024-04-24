@@ -29,6 +29,7 @@ app.get("/customers", async (req, res) => {
   }   
 });
 
+//Get Customers
 app.get("/reset", async (req, res) => {
   const [result, err] = await da.resetCustomers();
   if(result){
@@ -39,6 +40,7 @@ app.get("/reset", async (req, res) => {
   }   
 });
 
+//Add Customers
 app.post('/customers', async (req, res) => {
   const newCustomer = req.body;
   // Check if the request body is missing
@@ -59,3 +61,16 @@ app.post('/customers', async (req, res) => {
    }
  }
   });
+//update Customer by Id
+app.get("/customers/:id", async (req, res) => {
+  const id = req.params.id;
+  // return array [customer, errMessage]
+  const [cust, err] = await da.getCustomerById(id);
+  if(cust){
+      res.send(cust);
+  }else{
+      res.status(404);
+      res.send(err);
+  }   
+});
+
