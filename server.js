@@ -7,7 +7,10 @@ const da = require("./data-access");
 
 
 const app = express();
+const bodyParser = require('body-parser');
 const port = process.env.PORT || 4000;  // use env var or default to 4000
+
+app.use(bodyParser.json());
 
 // Set the static directory to serve files from
 app.use(express.static(path.join(__dirname, 'public')));
@@ -35,3 +38,24 @@ app.get("/reset", async (req, res) => {
       res.send(err);
   }   
 });
+
+app.post('/customers', async (req, res) => {
+  const newCustomer = req.body;
+  // Check if the request body is missing
+  if (Object.keys(req.body).length === 0) {
+  res.status(400).send("missing request body");
+  } else {
+ // Check if the required properties are present
+   if (!newCustomer.name || !newCustomer.email) {
+   res.status(400).send("missing required properties");
+   return;
+  }
+ // Handle the request
+  const [status, id, errMessage] = await da.addCustomer(newCustomer);
+  if (status === "success") {
+  res.status(201).send({ ...newCustomer, _id: id });
+   } else {
+   res.status(400).send(errMessage);
+   }
+ }
+  });
