@@ -10,6 +10,18 @@ function genAPIKey () {
   function setApiKey(){
     apiKey = process.env.API_KEY
     console.log("apikey is", apiKey)
+
+    //Check the commanline arguments for API key
+    if(process.argv[2] != null){
+      if(process.argv[2].indexOf('=') >= 0){
+          apiKey = process.argv[2].substring(process.argv[2].indexOf('=')+1,process.argv[2].length );
+          console.log("apikey from command line is", apiKey)
+          if(apiKey != "opensesame"){
+          console.log(apiKey , "API Key is invalid. Not matching(code:403)")
+          process.exit(0);
+          }
+        }
+  }
     
     if(apiKey && apiKey.length >0){
         apiKeys.set("default", apiKey );
