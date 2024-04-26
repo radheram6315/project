@@ -1,14 +1,17 @@
 // server.js file
 console.log('This is NodeJS, Express and MongoDB app');
-
 const express = require('express');
 const path = require('path');  // for handling file paths
 const da = require("./data-access");
-
-
+const API = require('./apisecurity');
+const dotenv = require('dotenv');
+dotenv.config();
+const port = process.env.PORT; 
+const api_key = process.env.API_KEY;
+const mongodb_url = process.env.MONGO_URL;
 const app = express();
 const bodyParser = require('body-parser');
-const port = process.env.PORT || 4000;  // use env var or default to 4000
+//const port = process.env.PORT || 4000;  // use env var or default to 4000
 
 app.use(bodyParser.json());
 
@@ -19,18 +22,26 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
-app.get("/customers", async (req, res) => {
-  const [cust, err] = await da.getCustomers();
-  if(cust){
-      res.send(cust);
-  }else{
-      res.status(500);
-      res.send(err);
-  }   
+// my test endpoint
+app.get("/apikey", async (req, res) => {
+  const ApiKey = API.genAPIKey();
+  res.send(ApiKey); 
 });
 
-//Get Customers
-app.get("/reset", async (req, res) => {
+//setting the apikey to environment variable
+API.setApiKey();
+
+//Get all customers
+app.get("/customers", API.authenticateKey, async (req, res) => {
+  
+  const [cust, err] = await da.getCustomers();
+    if(cust){
+        res.send(cust);
+    }
+});
+
+//Reset the Customers
+app.get("/reset", API.authenticateKey, async (req, res) => {
   const [result, err] = await da.resetCustomers();
   if(result){
       res.send(result);
@@ -41,7 +52,7 @@ app.get("/reset", async (req, res) => {
 });
 
 //Add Customers
-app.post('/customers', async (req, res) => {
+app.post('/customers', API.authenticateKey, async (req, res) => {
   const newCustomer = req.body;
   // Check if the request body is missing
   if (Object.keys(req.body).length === 0) {
@@ -61,8 +72,9 @@ app.post('/customers', async (req, res) => {
    }
  }
   });
-//update Customer by Id
-app.get("/customers/:id", async (req, res) => {
+
+//get Customer by Id
+app.get("/customers/:id", API.authenticateKey, async (req, res) => {
   const id = req.params.id;
   // return array [customer, errMessage]
   const [cust, err] = await da.getCustomerById(id);
@@ -74,7 +86,8 @@ app.get("/customers/:id", async (req, res) => {
   }   
 });
 
-app.put('/customers/:id', async (req, res) => {
+//update Customer by Id
+app.put('/customers/:id', API.authenticateKey, async (req, res) => {
   const id = req.params.id;
   const updatedCustomer = req.body;
   if (Object.keys(req.body).length === 0) {
@@ -92,7 +105,8 @@ app.put('/customers/:id', async (req, res) => {
   }
 });
 
-app.delete("/customers/:id", async (req, res) => {
+//Delete Customer by Id
+app.delete("/customers/:id", API.authenticateKey, async (req, res) => {
   const id = req.params.id;
   // return array [message, errMessage]
   const [message, errMessage] = await da.deleteCustomerById(id);
