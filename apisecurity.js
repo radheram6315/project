@@ -1,4 +1,6 @@
 var crypto = require('crypto');
+const fs = require("fs");
+
 let apiKey = null;
 let apiKeys = new Map();
 
@@ -11,8 +13,18 @@ function genAPIKey () {
   function getNewApiKey(email){
     let newApiKey = crypto.randomBytes(6).toString('hex');
     apiKeys.set(email, newApiKey);
+    email_key = email+":"+newApiKey
+    //console.log(apiKeys)
+    //writes the apikey and email to the secrets file
+    fs.appendFile(__dirname + "/secretkeys", email_key, { flag: 'a+' }, err => {
+      if (err) {
+        console.error(err);
+      } else {
+        // file written successfully
+  }});
+
     displayApiKeys();
-    return newApiKey;
+    return email+":"+newApiKey;
   }
 
   function setApiKey(){
