@@ -22,10 +22,16 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
-// my test endpoint
+// get email and create apikey
 app.get("/apikey", async (req, res) => {
-  const ApiKey = API.genAPIKey();
-  res.send(ApiKey); 
+  let email = req.query.email;
+  if(email){
+      const newApiKey = API.getNewApiKey(email);
+      res.send(newApiKey);
+  }else{
+      res.status(400);
+      res.send("an email query param is required");
+  }   
 });
 
 //setting the apikey to environment variable
@@ -73,6 +79,37 @@ app.post('/customers', API.authenticateKey, async (req, res) => {
  }
   });
 
+  
+//search Customers
+app.get("/customers/find/", async (req, res) => {
+  const customerData = req.query.body
+  let id = +req.query.id;
+  let email = req.query.email;
+  let password = req.query.password;
+  let query = null;
+  if (id > -1) {
+      query = { "id": id };
+  } else if (email) {
+      query = { "email": email };
+  } else if (password) {
+      query = { "password": password }
+  }
+
+  if(query){
+  console.log("customer data:", query)
+  const [cust, err] = await da.searchCustomer(query);
+  if(cust){
+      res.send(cust);
+  }else{
+      res.status(404);
+      res.send(err);
+  } 
+} else {
+    res.status(400);
+    res.send("query string is required");
+}
+});
+
 //get Customer by Id
 app.get("/customers/:id", API.authenticateKey, async (req, res) => {
   const id = req.params.id;
@@ -117,3 +154,4 @@ app.delete("/customers/:id", API.authenticateKey, async (req, res) => {
       res.send(errMessage);
   }
 });
+

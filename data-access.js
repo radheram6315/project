@@ -1,3 +1,5 @@
+const { text } = require('body-parser');
+
 // data-access.js file
 const MongoClient = require('mongodb').MongoClient;
 const dbName = 'custdb';
@@ -42,9 +44,15 @@ async function resetCustomers() {
 
 async function addCustomer(newCustomer) {
     try {
+        const findCustomer = await collection.findOne({"id": newCustomer.id});
+        if(findCustomer){
+            console.log("duplicate", newCustomer.id);
+            return ["duplicate customer data", newCustomer.id, null];  
+        }else{
         const insertResult = await collection.insertOne(newCustomer);
         // return array [status, id, errMessage]
         return ["success", insertResult.insertedId, null];
+        }
     } catch (err) {
         console.log(err.message);
         return ["fail", null, err.message];
@@ -67,6 +75,7 @@ async function getCustomerById(id) {
 
 async function updateCustomer(updatedCustomer) {
     try {
+
         const filter = { "id": updatedCustomer.id };
         const setData = { $set: updatedCustomer };
         const updateResult = 
@@ -97,6 +106,24 @@ async function deleteCustomerById(id) {
 }
 
 
+async function searchCustomer(customerData) {
+    try {      
+        //collection.createIndex({"$**": "text"})
+        //const cust = collection.find({$text :{ $search : [customerData]}}); 
+       //const cust = collection.find({"name":Martyy Jackson}}); */
+       const cust = await collection.find(customerData).toArray();
+
+       if(!cust|| cust.length == 0 ){
+          return [ null, "no matching customer documents found"];
+        }
+        return [cust, null];
+    } catch (err) {
+        console.log(err.message);
+        return [null, err.message];
+    }
+}
+
+
 dbStartup();
 module.exports = { getCustomers, resetCustomers, addCustomer,
-     getCustomerById, updateCustomer, deleteCustomerById };
+     getCustomerById, updateCustomer, deleteCustomerById, searchCustomer};

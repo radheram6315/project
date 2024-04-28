@@ -1,3 +1,4 @@
+var crypto = require('crypto');
 let apiKey = null;
 let apiKeys = new Map();
 
@@ -5,6 +6,13 @@ let apiKeys = new Map();
 function genAPIKey () {
     const api_keyy = "opensesame"; 
     return api_keyy;
+  }
+
+  function getNewApiKey(email){
+    let newApiKey = crypto.randomBytes(6).toString('hex');
+    apiKeys.set(email, newApiKey);
+    displayApiKeys();
+    return newApiKey;
   }
 
   function setApiKey(){
@@ -61,4 +69,4 @@ function genAPIKey () {
     };
 }
 
-module.exports = { setApiKey, authenticateKey, genAPIKey, displayApiKeys };
+module.exports = { setApiKey, getNewApiKey, authenticateKey, genAPIKey, displayApiKeys };
